@@ -10,6 +10,10 @@ import { Link } from "react-router-dom";
 import { fetchBuyerAddress } from "../../features/BuyerAddress/BuyerAddressSlice";
 import { fetchStore } from "../../features/StoreSlice/StoreSlice";
 import { countTime } from "../../utility/countTime";
+import {
+  fetchProductById,
+  clearProduct,
+} from "../../features/ProductDetail/ProductDetailSlice";
 import Review from "../../features/Review/Review";
 import StoreHotProduct from "../../features/StoreHotProduct/StoreHotProduct";
 import StoreDiscount from "../../features/StoreDiscount/StoreDiscount";
@@ -32,23 +36,20 @@ import Chat from "../../assets/chat.svg";
 const ProductPage: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
   const navigate = useNavigate();
-  const { products } = useSelector(
-    (state: RootState) => state.suggestionOfTheDay
+
+  const product = useSelector(
+    (state: RootState) => state.productDetail.product
   );
+
   const { address, status: addressStatus } = useSelector(
     (state: RootState) => state.buyerAddress
   );
-  const { store, status: storeStatus } = useSelector(
-    (state: RootState) => state.storeProfile
-  );
+
+  const { store } = useSelector((state: RootState) => state.storeProfile);
 
   const { user } = useSelector((state: RootState) => state.profile);
 
   const { id } = useParams<{ id: string }>();
-
-  const product = products.find(
-    (product: Item) => product.id.toString() === id
-  );
 
   // This is the selected image for the product
   const [selectedImage, setSelectedImage] = useState<ItemImage | null>(
@@ -93,7 +94,6 @@ const ProductPage: React.FC = () => {
     return allImages;
   };
 
-
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false }); //This is used for mobile image carousel
   const [currentSlide, setCurrentSlide] = useState(0); //This is used for mobile image carousel
   const allImages = getAllImages();
@@ -128,7 +128,7 @@ const ProductPage: React.FC = () => {
       setSelectedImage(variant.images[0]);
     } else {
       // If the variant has no images, fallback to the product's promotion image
-      setSelectedImage(product.promotion_image || null);
+      setSelectedImage(product?.promotion_image || null);
     }
   };
 
@@ -175,7 +175,7 @@ const ProductPage: React.FC = () => {
   useEffect(() => {
     if (!product) {
       // If product not found, redirect to home page
-      navigate("/");
+      // navigate("/");
     } else {
       // Initialize states when product is available - reset for new product
       if (product.promotion_image) {
@@ -193,9 +193,32 @@ const ProductPage: React.FC = () => {
   useEffect(() => {
     if (!product) {
       // If product not found, redirect to home page
-      navigate("/");
+      // navigate("/");
     }
   }, []);
+
+  // Clear previous product and fetch new product by ID
+  useEffect(() => {
+    if (id) {
+      // Clear the previous product first
+      dispatch(clearProduct());
+
+      // Then fetch the new product (convert string id to number)
+      const productId = parseInt(id, 10);
+      if (!isNaN(productId)) {
+        const promise = dispatch(fetchProductById(productId));
+
+        return () => {
+          promise.abort();
+        };
+      }
+    }
+  }, [dispatch, id]);
+
+  // Scroll to top when component mounts or product ID changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [id]);
 
   // Update the current image when the selected image changes
   useEffect(() => {
@@ -216,7 +239,6 @@ const ProductPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-
     if (product?.store?.id) {
       const promise = dispatch(fetchStore(product.store.id));
       return () => {
@@ -224,11 +246,6 @@ const ProductPage: React.FC = () => {
       };
     }
   }, [dispatch, product?.store?.id]);
-
-  // Return null or loading state if product is not found
-  if (!product) {
-    return null; // Component will unmount and navigate will redirect
-  }
 
   useEffect(() => {
     if (!emblaApi) return;
@@ -242,6 +259,258 @@ const ProductPage: React.FC = () => {
     };
   }, [emblaApi]);
 
+  // Skeleton Loading Component
+  const ProductSkeleton = () => (
+    <div className="bg-gray-100 animate-pulse">
+      <header>
+        <BuyerHeader />
+      </header>
+
+      {/* Mobile product bottom panel skeleton */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex items-center h-16 bg-gray-300">
+        <div className="flex-2 h-full bg-gray-400"></div>
+        <div className="flex-2 h-full bg-gray-400"></div>
+        <div className="flex-3 h-full bg-gray-500"></div>
+      </div>
+
+      {/* Navigation skeleton */}
+      <nav className="hidden md:block ml-16 pt-[124px] text-lg">
+        <div className="flex items-center gap-2">
+          <div className="bg-gray-300 h-6 w-12 rounded"></div>
+          <div className="bg-gray-300 h-6 w-1 rounded"></div>
+          <div className="bg-gray-300 h-6 w-20 rounded"></div>
+          <div className="bg-gray-300 h-6 w-1 rounded"></div>
+          <div className="bg-gray-300 h-6 w-24 rounded"></div>
+        </div>
+      </nav>
+
+      <main className="pt-10 md:pt-0 md:mx-8 my-4">
+        <div className="w-full flex flex-col md:flex-row">
+          {/* Product skeleton */}
+          <div className="w-full md:w-2/3 flex flex-col md:flex-row bg-white pb-4">
+            {/* Mobile image skeleton */}
+            <div className="md:hidden relative">
+              <div className="w-full aspect-square bg-gray-300"></div>
+            </div>
+
+            {/* Desktop image skeleton */}
+            <div className="hidden md:block w-full md:w-1/2">
+              <div className="w-full h-96 bg-gray-300 rounded"></div>
+              <div className="mt-6 px-4">
+                <div className="flex justify-between items-center bg-gray-50 rounded-lg p-4">
+                  <div className="w-10 h-10 bg-gray-300 rounded-full"></div>
+                  <div className="flex gap-3">
+                    <div className="w-20 h-20 bg-gray-300 rounded-lg"></div>
+                    <div className="w-20 h-20 bg-gray-300 rounded-lg"></div>
+                    <div className="w-20 h-20 bg-gray-300 rounded-lg"></div>
+                  </div>
+                  <div className="w-10 h-10 bg-gray-300 rounded-full"></div>
+                </div>
+              </div>
+            </div>
+
+            {/* Product info skeleton */}
+            <div className="pt-4 px-4 md:px-4 w-full md:w-1/2">
+              <div className="bg-gray-300 h-6 w-3/4 rounded mb-4"></div>
+
+              <div className="flex justify-between items-center mt-4">
+                <div className="flex items-center gap-2">
+                  <div className="flex gap-1">
+                    {[...Array(5)].map((_, i) => (
+                      <div
+                        key={i}
+                        className="w-4 h-4 bg-gray-300 rounded"
+                      ></div>
+                    ))}
+                  </div>
+                  <div className="bg-gray-300 h-4 w-8 rounded"></div>
+                  <div className="bg-gray-300 h-4 w-1 rounded"></div>
+                  <div className="bg-gray-300 h-4 w-16 rounded"></div>
+                  <div className="bg-gray-300 h-4 w-1 rounded"></div>
+                  <div className="bg-gray-300 h-4 w-12 rounded"></div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 bg-gray-300 rounded"></div>
+                  <div className="w-6 h-6 bg-gray-300 rounded"></div>
+                </div>
+              </div>
+
+              <div className="bg-gray-300 h-8 w-24 rounded mt-4"></div>
+              <div className="bg-gray-300 h-4 w-32 rounded mt-4 hidden md:block"></div>
+
+              {/* Variants skeleton */}
+              <div className="hidden md:flex gap-4 mt-4">
+                <div className="bg-gray-300 h-4 w-16 rounded"></div>
+                <div>
+                  <div className="bg-gray-300 h-4 w-24 rounded mb-2"></div>
+                  <div className="flex gap-2">
+                    <div className="bg-gray-300 h-8 w-16 rounded"></div>
+                    <div className="bg-gray-300 h-8 w-16 rounded"></div>
+                    <div className="bg-gray-300 h-8 w-16 rounded"></div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quantity skeleton */}
+              <div className="hidden md:flex gap-4 mt-4 items-center">
+                <div className="bg-gray-300 h-4 w-16 rounded"></div>
+                <div className="flex items-center gap-4">
+                  <div className="bg-gray-300 h-8 w-8 rounded"></div>
+                  <div className="bg-gray-300 h-4 w-4 rounded"></div>
+                  <div className="bg-gray-300 h-8 w-8 rounded"></div>
+                </div>
+              </div>
+
+              {/* Buttons skeleton */}
+              <div className="hidden md:flex gap-4 mt-4">
+                <div className="bg-gray-300 h-10 w-24 rounded"></div>
+                <div className="bg-gray-300 h-10 w-28 rounded"></div>
+              </div>
+            </div>
+          </div>
+
+          {/* Shop Information skeleton */}
+          <div className="w-full md:w-1/3 bg-blue-100 px-4 py-4">
+            <div className="bg-gray-300 h-6 w-32 rounded mb-4"></div>
+
+            {/* Location skeleton */}
+            <div className="flex justify-between items-center mt-4">
+              <div className="flex items-center gap-2 w-2/3">
+                <div className="w-6 h-6 bg-gray-300 rounded"></div>
+                <div className="bg-gray-300 h-4 w-48 rounded"></div>
+              </div>
+              <div className="bg-gray-300 h-4 w-16 rounded"></div>
+            </div>
+
+            {/* Delivery skeleton */}
+            <div className="flex justify-between items-center mt-4">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 bg-gray-300 rounded"></div>
+                <div className="bg-gray-300 h-4 w-40 rounded"></div>
+              </div>
+            </div>
+
+            {/* Store info skeleton */}
+            <div className="flex justify-between items-center mt-4">
+              <div className="flex items-center gap-4 w-1/2">
+                <div className="w-12 h-12 bg-gray-300 rounded-full"></div>
+                <div className="bg-gray-300 h-4 w-24 rounded"></div>
+              </div>
+              <div className="flex flex-col gap-2">
+                <div className="bg-gray-300 h-6 w-16 rounded"></div>
+                <div className="bg-gray-300 h-6 w-20 rounded"></div>
+              </div>
+            </div>
+
+            {/* Store stats skeleton */}
+            <div className="flex md:grid md:grid-cols-2 gap-2 md:gap-4 mt-4">
+              <div className="bg-gray-300 h-4 w-16 rounded"></div>
+              <div className="bg-gray-300 h-4 w-20 rounded"></div>
+              <div className="bg-gray-300 h-4 w-12 rounded"></div>
+            </div>
+          </div>
+        </div>
+
+        {/* Product Details skeleton */}
+        <div className="flex flex-col-reverse md:flex-row gap-6 mt-6 md:mt-20">
+          <div className="flex-1">
+            {/* Description skeleton */}
+            <div className="px-4 py-6 bg-white mb-12">
+              <div className="bg-blue-100 px-4 py-2 mb-4">
+                <div className="bg-gray-300 h-6 w-32 rounded"></div>
+              </div>
+
+              <div className="space-y-4 mb-4">
+                <div className="flex justify-between">
+                  <div className="bg-gray-300 h-4 w-16 rounded"></div>
+                  <div className="bg-gray-300 h-4 w-48 rounded"></div>
+                </div>
+                <div className="flex justify-between">
+                  <div className="bg-gray-300 h-4 w-24 rounded"></div>
+                  <div className="bg-gray-300 h-4 w-12 rounded"></div>
+                </div>
+              </div>
+
+              <div className="bg-blue-100 px-4 py-2 mt-16 mb-4">
+                <div className="bg-gray-300 h-6 w-24 rounded"></div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="bg-gray-300 h-4 w-full rounded"></div>
+                <div className="bg-gray-300 h-4 w-full rounded"></div>
+                <div className="bg-gray-300 h-4 w-3/4 rounded"></div>
+              </div>
+            </div>
+
+            {/* Review skeleton */}
+            <div className="bg-white p-4 rounded">
+              <div className="bg-gray-300 h-6 w-32 rounded mb-4"></div>
+              <div className="space-y-3">
+                {[...Array(3)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="bg-gray-300 h-16 w-full rounded"
+                  ></div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="w-full md:w-1/3">
+            {/* Store sections skeleton */}
+            <div className="space-y-4">
+              <div className="bg-white p-4 rounded">
+                <div className="bg-gray-300 h-6 w-32 rounded mb-4"></div>
+                <div className="space-y-2">
+                  {[...Array(4)].map((_, i) => (
+                    <div
+                      key={i}
+                      className="bg-gray-300 h-20 w-full rounded"
+                    ></div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Store products skeleton */}
+        <div className="mt-6">
+          <div className="bg-white p-4 rounded">
+            <div className="bg-gray-300 h-6 w-40 rounded mb-4"></div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="bg-gray-300 h-48 rounded"></div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Suggestion skeleton */}
+        <div className="mt-6">
+          <div className="bg-white p-4 rounded">
+            <div className="bg-gray-300 h-6 w-48 rounded mb-4"></div>
+            <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="bg-gray-300 h-32 rounded"></div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <footer>
+        <Footer />
+      </footer>
+      <div className="md:hidden w-full h-10"></div>
+    </div>
+  );
+
+  // Return skeleton or loading state if product is not found
+  if (!product) {
+    return <ProductSkeleton />;
+  }
+
   return (
     <div className="bg-gray-100">
       <header>
@@ -251,7 +520,11 @@ const ProductPage: React.FC = () => {
       {/* Mobile product bottom panel */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex items-center h-16">
         <button className="flex-2 h-full py-2 flex flex-col justify-center items-center text-sm font-semibold text-white bg-purple-500 hover:bg-purple-600">
-          <img src={AddCart} alt="Add to Cart" className="inline-block mr-1 w-4" />
+          <img
+            src={AddCart}
+            alt="Add to Cart"
+            className="inline-block mr-1 w-4"
+          />
           <p>Add to Cart</p>
         </button>
         <button className="flex-2 h-full py-2 flex flex-col justify-center items-center text-sm font-semibold text-white bg-purple-500 hover:bg-purple-600">
@@ -264,14 +537,25 @@ const ProductPage: React.FC = () => {
       </div>
 
       <nav className="hidden md:block ml-16 pt-[124px] text-lg">
-        <Link to="/">Shopp</Link>
-        {product.category_hierarchy?.map(
-          (category: { id: number; name: string; slug: string }) => (
-            <>
-              {" "}
-              / <Link to={`/category/${category.slug}`}>{category.name}</Link>
-            </>
-          )
+        {product ? (
+          <>
+            <Link to="/">Shopp</Link>
+            {product.category_hierarchy?.map(
+              (category: {
+                id: number | null;
+                name: string | null;
+                slug: string | null;
+              }) => (
+                <>
+                  {" "}
+                  /{" "}
+                  <Link to={`/category/${category.slug}`}>{category.name}</Link>
+                </>
+              )
+            )}
+          </>
+        ) : (
+          <div className="bg-[#d9d9d9] h-5 w-16 rounded-lg"></div>
         )}
       </nav>
       <main className="pt-10 md:pt-0 md:mx-8 my-4">
@@ -280,60 +564,80 @@ const ProductPage: React.FC = () => {
           <div className="w-full md:w-2/3 flex flex-col md:flex-row bg-white pb-4">
             {/* Carousel cho Mobile */}
             <div className="md:hidden relative">
-              <div className="overflow-hidden" ref={emblaRef}>
-                <div className="flex">
-                  {allImages.map((image, index) => (
-                    <div className="flex-[0_0_100%] min-w-0" key={index}>
-                      <img
-                        src={image.url}
-                        alt={image.alt_text || `Product Image ${index + 1}`}
-                        className="w-full aspect-square object-cover"
-                      />
+              {allImages.length > 0 ? (
+                <>
+                  <div className="overflow-hidden" ref={emblaRef}>
+                    <div className="flex">
+                      {allImages.map((image, index) => (
+                        <div className="flex-[0_0_100%] min-w-0" key={index}>
+                          <img
+                            src={image.url}
+                            alt={image.alt_text || `Product Image ${index + 1}`}
+                            className="w-full aspect-square object-cover"
+                          />
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              </div>
+                  </div>
 
-              {allImages.length > 1 && (
-                <div className="absolute bottom-4 right-4 bg-black bg-opacity-60 text-white text-xs px-2.5 py-1 rounded-full">
-                  {currentSlide + 1} / {allImages.length}
-                </div>
+                  {allImages.length > 1 && (
+                    <div className="absolute bottom-4 right-4 bg-black bg-opacity-60 text-white text-xs px-2.5 py-1 rounded-full">
+                      {currentSlide + 1} / {allImages.length}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="bg-[#d9d9d9]"></div>
               )}
             </div>
 
-            {product.variants.length > 1 && (
-              <div className="md:hidden pl-2 py-2">
-                <p className="text-sm font-semibold">{product.variants.length} variants available</p>
-                <div className="flex gap-2 mt-2 overflow-x-auto pb-2">
-                  {product.variants.map((variant: ItemVariant) => {
-                    if (!variant.images || variant.images.length === 0)
-                      return null;
+            {product.variants ? (
+              product.variants.length > 1 ? (
+                <div className="md:hidden pl-2 py-2">
+                  <p className="text-sm font-semibold">
+                    {product.variants.length} variants available
+                  </p>
+                  <div className="flex gap-2 mt-2 overflow-x-auto pb-2">
+                    {product.variants.map((variant: ItemVariant) => {
+                      if (!variant.images || variant.images.length === 0)
+                        return null;
 
-                    const variantImage = variant.images[0];
-                    const imageIndex = allImages.findIndex(
-                      (img) => img.id === variantImage.id
-                    );
-                    const isSelected = currentSlide === imageIndex;
+                      const variantImage = variant.images[0];
+                      const imageIndex = allImages.findIndex(
+                        (img) => img.id === variantImage.id
+                      );
+                      const isSelected = currentSlide === imageIndex;
 
-                    return (
-                      <img
-                        src={variantImage.url}
-                        alt={variant.variant_name}
-                        key={variant.id}
-                        onClick={() => {
-                          if (emblaApi && imageIndex !== -1) {
-                            emblaApi.scrollTo(imageIndex);
-                          }
-                        }}
-                        className={`w-12 h-12 object-cover rounded-md cursor-pointer transition-all duration-200 ${
-                          isSelected
-                            ? "border-2 border-purple-500 ring-2 ring-purple-200"
-                            : "border border-gray-300"
-                        }`}
-                      />
-                    );
-                  })}
+                      return (
+                        <img
+                          src={variantImage.url}
+                          alt={variant.variant_name}
+                          key={variant.id}
+                          onClick={() => {
+                            if (emblaApi && imageIndex !== -1) {
+                              emblaApi.scrollTo(imageIndex);
+                            }
+                          }}
+                          className={`w-12 h-12 object-cover rounded-md cursor-pointer transition-all duration-200 ${
+                            isSelected
+                              ? "border-2 border-purple-500 ring-2 ring-purple-200"
+                              : "border border-gray-300"
+                          }`}
+                        />
+                      );
+                    })}
+                  </div>
                 </div>
+              ) : (
+                <></>
+              )
+            ) : (
+              <div className="flex items-center justify-center">
+                <div className="bg-[#d9d9d9] w-5 h-5"></div>
+                <div className="bg-[#d9d9d9] w-5 h-5"></div>
+                <div className="bg-[#d9d9d9] w-5 h-5"></div>
+                <div className="bg-[#d9d9d9] w-5 h-5"></div>
+                <div className="bg-[#d9d9d9] w-5 h-5"></div>
               </div>
             )}
 
@@ -438,7 +742,9 @@ const ProductPage: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <div className="flex items-center gap-1.5">
                     <div className="flex items-center">
-                      {countStars(product.average_rating)}
+                      {product.average_rating
+                        ? countStars(Number(product.average_rating))
+                        : countStars(0)}
                     </div>{" "}
                     <span className="text-blue-500">
                       {product.average_rating ?? 0}
@@ -465,7 +771,7 @@ const ProductPage: React.FC = () => {
               <p className="mt-4 hidden md:inline">
                 Remain: {currentVariant?.stock_quantity || 0}
               </p>
-              {product.variants.length > 1 && (
+              {product.variants && product.variants.length > 1 && (
                 <div className="hidden md:flex gap-4 mt-2">
                   <div className="flex">
                     <p>Variants</p>
@@ -634,7 +940,11 @@ const ProductPage: React.FC = () => {
                     Shopp
                   </Link>
                   {product.category_hierarchy?.map(
-                    (category: { id: number; name: string; slug: string }) => (
+                    (category: {
+                      id: number;
+                      name: string;
+                      slug: string | null;
+                    }) => (
                       <>
                         {" "}
                         /{" "}
@@ -653,11 +963,12 @@ const ProductPage: React.FC = () => {
               <div className="flex justify-between items-center mb-4">
                 <p>Total Amounts</p>
                 <p className="">
-                  {product.variants.reduce(
-                    (total: number, variant: ItemVariant) =>
-                      total + variant.stock_quantity,
-                    0
-                  )}
+                  {product.variants &&
+                    product.variants.reduce(
+                      (total: number, variant: ItemVariant) =>
+                        total + variant.stock_quantity,
+                      0
+                    )}
                 </p>
               </div>
 
@@ -670,7 +981,7 @@ const ProductPage: React.FC = () => {
             {/* Rating */}
             <Review
               total_reviews={product.total_reviews}
-              average_rating={product.average_rating}
+              average_rating={Number(product.average_rating)}
               countStars={countStars}
               stars_5={product.stars_5}
               stars_4={product.stars_4}
@@ -683,12 +994,18 @@ const ProductPage: React.FC = () => {
           </div>
 
           <div>
-            <StoreDiscount store_id={product.store.id} />
-            <StoreHotProduct store_id={product.store.id} />
+            {product.store ? (
+              <>
+                <StoreDiscount store_id={product.store.id} />
+                <StoreHotProduct store_id={product.store.id} />
+              </>
+            ) : (
+              <></>
+            )}
           </div>
         </div>
 
-        <StoreProducts store_id={product.store.id} />
+        {product.store ? <StoreProducts store_id={product.store.id} /> : <></>}
         <SuggestionOfTheDay />
       </main>
 

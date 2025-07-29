@@ -70,6 +70,15 @@ export interface Item {
     created_at: Date;
     updated_at: Date;
     is_published: boolean;
+    average_rating: string; 
+    total_reviews: number;
+    stars_5: number;
+    stars_4: number;
+    stars_3: number;
+    stars_2: number;
+    stars_1: number;
+    have_comment: number;
+    have_image: number;
     views: string;
     bought: number;
     sku: string;
@@ -78,4 +87,19 @@ export interface Item {
     promotion_image: ItemImage | null;
     variants: ItemVariant[] | null;
     product_images: ItemImage[] | null;
+}
+
+export interface ProductCardStore{
+    id: number;
+    name: string;
+}
+
+export interface ProductCard {
+    id: number;
+    name:string;
+    bought: number;
+    average_rating: string; // Kept as string to match query output
+    price: string;          // Represents the price of the primary variant
+    promotion_image: ItemImage | null;
+    store: ProductCardStore | null;
 }

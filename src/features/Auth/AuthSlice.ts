@@ -88,6 +88,7 @@ const initialState: AuthState = {
 const AuthSlice = createSlice({
   name: "auth",
   initialState,
+
   reducers: {
     logoutClientSide: (state) => {
       state.accessToken = null;

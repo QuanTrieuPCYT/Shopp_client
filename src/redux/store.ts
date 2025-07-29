@@ -12,6 +12,8 @@ import search from '../features/Search/SearchSlice';
 import category from '../features/Category/CategorySlice';
 import categoryProducts from '../features/Category/CategoryProductsSlice';
 import stores from '../features/StoreSlice/StoreSlice';
+import productDetail from '../features/ProductDetail/ProductDetailSlice'; 
+
 
 export const store = configureStore({
     reducer: {
@@ -27,7 +29,8 @@ export const store = configureStore({
         search,
         category,
         categoryProducts,
-        stores
+        stores,
+        productDetail
     },
 });
 
