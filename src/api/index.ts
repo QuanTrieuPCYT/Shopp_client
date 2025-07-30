@@ -26,6 +26,12 @@ API.interceptors.response.use(
     const originalRequest = error.config;
     const status = error.response ? error.response.status : null;
 
+    const accessToken = store.getState().auth.accessToken;
+    if (status === 401 && !accessToken) {
+        console.log("User is not authenticated. No refresh attempt needed.");
+        return Promise.reject(error);
+    }
+
     if (status === 401 && !originalRequest._retry) {
       if (originalRequest.url.endsWith('/refresh')) {
           console.error("Refresh token is invalid, logging out.");
@@ -41,7 +47,7 @@ API.interceptors.response.use(
 
         if (fetchNewAccessToken.fulfilled.match(resultAction)) {
           const newAccessToken = resultAction.payload.accessToken;
-          API.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
+          // API.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
           originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
           return API(originalRequest);
         } else {
@@ -74,10 +80,11 @@ export const logout = () => API.post('/users/logout');
 export const getProfile = () => API.get("/users/me");
 
 //! All users
-export const getActiveCategories = () => API.get("/categories/active");
+export const getProductById = (productId: number) => API.get(`/products/${productId}`);
 export const getHot = (offset:number) => API.get(`/products/hot?offset=${offset}`);
 export const getStoreProducts = (storeId: number, limit: number, offset: number) => API.get(`/store/${storeId}/products?limit=${limit}&offset=${offset}`);
 export const getStoreHotProducts = (storeId: number, limit: number, offset: number) => API.get(`/store/${storeId}/products/hot?limit=${limit}&offset=${offset}`);
+export const getActiveCategories = () => API.get("/categories/active");
 export const getProductsReview = (productId: number, offset: number) => API.get(`/products/${productId}/reviews?limit=25&offset=${offset}`);
 export const getProductsReviewByStars = (productId: number, stars: number, offset: number) => API.get(`/products/${productId}/reviews/rating/${stars}?limit=25&offset=${offset}`);
 export const getProductsReviewByComment = (productId: number, offset: number) => API.get(`/products/${productId}/reviews/comment?limit=25&offset=${offset}`);
