@@ -14,7 +14,7 @@ const LoginPage = () => {
             </header>
             
             <main className="flex-grow flex items-center justify-center p-4">
-                <div className='w-full max-w-md bg-[#FFFFFF] border-t border-t-[rgba(0,0,0,0.1)] shadow-[0_4px_4px_rgba(0,0,0,0.25)] rounded-[12px] p-6 sm:p-8'>
+                <div className='w-full max-w-md bg-[#FFFFFF] border-t border-t-[rgba(0,0,0,0.1)] shadow-[0_4px_4px_rgba(0,0,0,0.25)] rounded-[12px] p-6 sm:p-8 my-8'>
                     <LoginForm />
                 </div>
             </main>
