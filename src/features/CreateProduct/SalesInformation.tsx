@@ -84,16 +84,13 @@ const SalesInformation: React.FC<SalesInfoProps> = ({ data, onChange, onBack, on
     };
 
     const removeImage = (variantIdx: number, idToRemove: number) => {
-        onChange(prev => ({
-            ...prev,
-            variant: prev.variant.map((v, id) => {
-                if (id !== variantIdx) return v;
-                return {
-                    ...v,
-                    variantImage: v.variantImage.filter((_, imgIdx) => imgIdx !== idToRemove)
-                };
-            })
-        }));
+        setVariantList(prev => 
+            prev.map((v, i) => 
+                i === variantIdx
+                    ? { ...v, variantImage: v.variantImage.filter((_, imgIdx) => imgIdx !== idToRemove) }
+                    : v
+            )
+        );
     };
 
     const removeAllImage = (variantIdx: number) => {
@@ -251,7 +248,7 @@ const SalesInformation: React.FC<SalesInfoProps> = ({ data, onChange, onBack, on
                                         className="cursor-pointer flex justify-between items-center mx-2"
                                         onClick={() => setActiveIndex(activeIndex === idx ? null : idx)}
                                     >
-                                        <span className="text-2xl font-semibold text-[#A567C6] pb-2">
+                                        <span className="text-2xl font-semibold text-[#A567C6]">
                                             {variant.variantName}
                                         </span>
                                         <span>{activeIndex === idx ? "▲" : "▼"}</span>
@@ -271,7 +268,7 @@ const SalesInformation: React.FC<SalesInfoProps> = ({ data, onChange, onBack, on
                                                 }
                                             </div>
 
-                                            <div className='flex overflow-y-scroll pt-4 px-2 items-center'>
+                                            <div className='flex overflow-y-scroll px-2 items-center'>
                                                 <label
                                                     htmlFor={`variant-images-${idx}`}
                                                     className="flex w-48 h-48 mt-5 mb-5 flex-col items-center justify-center aspect-square border-2 border-slate-400 border-dashed rounded-lg cursor-pointer bg-gray-800 hover:bg-gray-700 transition-colors"
@@ -296,39 +293,39 @@ const SalesInformation: React.FC<SalesInfoProps> = ({ data, onChange, onBack, on
                                                     }}
                                                     ref={variantFilesInputRef}
                                                 />
-                                                {variantList.map((variant, idx) => (
-                                                    <div key={variant.id} className="flex ml-4">
-                                                        {variant.variantImage.map((image, imageId) => (
-                                                            <div key={imageId} className="flex">
-                                                                <img
+                                                {activeIndex !== null && variantList[activeIndex] && (
+                                                    <div className="flex overflow-x-scroll px-4">
+                                                        {variantList[activeIndex].variantImage.map((image, imageId) => (
+                                                            <React.Fragment key={imageId}>
+                                                                <img 
                                                                     src={typeof image === 'string' ? image : URL.createObjectURL(image)}
                                                                     alt={`Image ${imageId + 1}`}
-                                                                    className='w-48 h-48'
+                                                                    className="w-48 h-48"
                                                                 />
                                                                 <span 
-                                                                    className='hover:cursor-pointer ml-2 mr-4' 
-                                                                    onClick={() => removeImage(idx, imageId)}
+                                                                    className="self-start hover:cursor-pointer ml-1 mr-6"
+                                                                    onClick={() => removeImage(activeIndex, imageId)}
                                                                 >
                                                                     X
                                                                 </span>
-                                                            </div>
+                                                            </React.Fragment>
                                                         ))}
                                                     </div>
-                                                ))}
+                                                )}
                                             </div>
 
-                                            <label htmlFor={`variant-name-${idx}`} className='font-semibold text-[0.8rem] pt-4'>
+                                            <label htmlFor={`variant-name-${idx}`} className='font-semibold text-[0.8rem]'>
                                                 <span className='text-red-500'>*</span>
                                                 Variant name
                                             </label>
 
-                                            <label htmlFor={`variant-price-${idx}`} className='font-semibold text-[0.8rem] ml-143'>
+                                            <label htmlFor={`variant-price-${idx}`} className='font-semibold text-[0.8rem] ml-84'>
                                                 <span className='text-red-500'>*</span>
                                                 Price in US dollar
                                             </label>
 
 
-                                            <motion.div className="mt-2 gap-2 mb-4"
+                                            <motion.div className="mt-2 gap-2 mb-2"
                                                 initial={{ opacity: 0, scaleY: 0.95 }}
                                                 animate={{ opacity: 1, scaleY: 1 }}
                                                 exit={{ opacity: 0, scaleY: 0.95 }}
@@ -359,8 +356,8 @@ const SalesInformation: React.FC<SalesInfoProps> = ({ data, onChange, onBack, on
                                                     onChange={e => handleChangeVariant(idx, "variantPrice", e.target.value)}
                                                 />
 
-                                                <h3 className='font-semibold text-[0.9rem] mb-2.5 mt-4'>Shipping</h3>
-                                                <div className='flex flex-col gap-4 mb-4'>
+                                                <h3 className='font-semibold text-[0.9rem] mb-2.5 mt-3'>Shipping</h3>
+                                                <div className='flex flex-col gap-2 mb-3'>
                                                     <label htmlFor={`variant-weight-${idx}`} className='font-semibold text-[0.8rem]'>
                                                         <span className='text-red-500'>*</span>
                                                         Weight (lbs) - After packing
@@ -373,7 +370,7 @@ const SalesInformation: React.FC<SalesInfoProps> = ({ data, onChange, onBack, on
                                                         onChange={e => handleChangeVariant(idx, "variantWeight", e.target.value)}
                                                     />
                                                 </div>
-                                                <div className='flex flex-col gap-4 mb-4'>
+                                                <div className='flex flex-col gap-2 mb-2'>
                                                     <label htmlFor={`variant-length-${idx}`} className='font-semibold text-[0.8rem]'>
                                                         <span className='text-red-500'>*</span>
                                                         Packing size (cm) - Actual shipping fee will vary if you enter wrong size
