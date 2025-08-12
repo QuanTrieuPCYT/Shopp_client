@@ -67,7 +67,11 @@ const SalesInformation: React.FC<SalesInfoProps> = ({ data, onChange, onBack, on
                 if (i !== idx) return v;
 
                 if (field === 'variantImage') {
+                    const currentImages = v.variantImage.length;
                     const files = Array.isArray(value) ? value : [value];
+                    if (currentImages + files.length > maxFiles) {
+                        return v;
+                    }
                     return {
                         ...v,
                         variantImage: [...v.variantImage, ...files]
@@ -287,6 +291,7 @@ const SalesInformation: React.FC<SalesInfoProps> = ({ data, onChange, onBack, on
                                                     id={`variant-images-${idx}`} 
                                                     className='hidden'
                                                     multiple
+                                                    disabled={(variant.variantImage.length + 1) > maxFiles}
                                                     onChange={(e) =>{
                                                         const files = e.target.files ? Array.from(e.target.files) : [];
                                                         handleChangeVariant(idx, "variantImage", files)

@@ -113,6 +113,7 @@ const BasicInformation: React.FC<BasicInfoProps> = ({ data, onChange, onNext }) 
                         id='product-image' 
                         className='hidden'
                         multiple
+                        disabled={productImage.length + 1 > maxFiles}
                         onChange={handleProductFilesChange}
                         ref={productFilesInputRef}
                     />
