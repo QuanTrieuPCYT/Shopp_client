@@ -258,6 +258,7 @@ const BuyerHeader: React.FC = () => {
                 Seller channel
               </Link>
             )}
+
             <div className="flex items-center space-x-2">
               <a
                 href="https://github.com/Reddit-Clone-App-Project/Shopp_client"
