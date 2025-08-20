@@ -258,7 +258,6 @@ const BuyerHeader: React.FC = () => {
                 Seller channel
               </Link>
             )}
-
             <div className="flex items-center space-x-2">
               <a
                 href="https://github.com/Reddit-Clone-App-Project/Shopp_client"
@@ -613,9 +612,7 @@ const BuyerHeader: React.FC = () => {
                           >
                             View Full Cart
                           </Link>
-                          <button className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 font-semibold shadow-md hover:shadow-lg transform hover:scale-105 cursor-pointer">
-                            Proceed to Checkout
-                          </button>
+                         
                         </div>
                       </div>
                     </>

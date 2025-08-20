@@ -116,4 +116,18 @@ export const removeProductFromCart = (productVariantId: number) => API.delete(`/
 export const removeAllProductsFromCart = () => API.delete(`/cart/all`);
 export const updateCartItemQuantity = (productVariantId: number, quantity: number) => API.put("/cart", {
   productVariantId, quantity
+
+});
+
+interface CheckoutItem {
+    product_name: String, 
+    image_url: String, 
+    price_at_purchase: number, 
+    product_variant_id: number, 
+    quantity: number, 
+    variant_name: String
+}
+
+export const checkout = (items: CheckoutItem[]) => API.post("/payment/create-checkout-session", {
+  items
 });
