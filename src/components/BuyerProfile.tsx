@@ -8,6 +8,9 @@ import {
 } from "../features/UserProfile/UserProfileSlice";
 import { toast } from "react-toastify";
 
+import BuyerProfileOTP from "./BuyerProfileOTP";
+
+
 const BuyerProfile: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
   const { user, status } = useSelector((state: RootState) => state.profile);
@@ -27,6 +30,11 @@ const BuyerProfile: React.FC = () => {
       ? new Date(user.date_of_birth).getFullYear().toString()
       : "",
   });
+
+
+  // State for OTP modal
+  const [showOTPModal, setShowOTPModal] = useState(false);
+
 
   // Ref for file input
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -182,9 +190,6 @@ const BuyerProfile: React.FC = () => {
               <span className="text-gray-900">
                 {hideEmail(user?.email || "")}
               </span>
-              <button className="text-blue-600 underline hover:text-blue-700 transition-colors">
-                Change
-              </button>
             </div>
           </div>
 
@@ -196,7 +201,11 @@ const BuyerProfile: React.FC = () => {
               <span className="text-gray-900">
                 {hidePhoneNumber(user?.phone_number || "")}
               </span>
-              <button className="text-blue-600 underline hover:text-blue-700 transition-colors">
+              <button
+                onClick={() => setShowOTPModal(true)}
+                className="text-blue-600 underline hover:text-blue-700 transition-colors"
+              >
+
                 Change
               </button>
             </div>
@@ -367,6 +376,28 @@ const BuyerProfile: React.FC = () => {
           </div>
         </div>
       </div>
+
+
+      {/* OTP Modal */}
+      {showOTPModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Change Phone Number
+              </h3>
+              <button
+                onClick={() => setShowOTPModal(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+            <BuyerProfileOTP onClose={() => setShowOTPModal(false)} />
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
