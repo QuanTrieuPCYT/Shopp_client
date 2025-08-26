@@ -56,7 +56,7 @@ const initialState: StoreState = {
   error: null,
 };
 
-const storeSlice = createSlice({
+export const storeSlice = createSlice({
   name: "store",
   initialState,
   reducers: {
