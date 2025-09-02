@@ -20,7 +20,7 @@ import ProductPage from "./pages/buyer/ProductPage.tsx";
 import SearchPage from "./pages/buyer/SearchPage.tsx";
 import CategoryPage from "./pages/buyer/CategoryPage.tsx";
 import CartPage from "./pages/buyer/CartPage.tsx";
-import AccessGuard from "./components/AccesGuard.tsx";
+import AccessGuard from "./components/AccessGuard.tsx";
 import PaymentSuccess from "./pages/buyer/PaymentSuccess.tsx";
 import PaymentFail from "./pages/buyer/PaymentFail.tsx";
 import AllProduct from "./pages/seller/ProductManagement/AllProduct.tsx";
@@ -35,7 +35,11 @@ import NotificationOrders from "./components/NotificationOrders.tsx";
 import NotificationPromotions from "./components/NotificationPromotions.tsx";
 import Orders from "./components/Orders.tsx";
 import Vouchers from "./components/Vouchers.tsx";
-
+import OrderDetail from "./features/Orders/OrderDetail.tsx";
+import Notification from "./features/Notification/Notification.tsx";
+import WishListPage from "./pages/buyer/WishListPage.tsx";
+import Wishlist from "./components/Wishlist.tsx";
+import WishlistDetail from "./components/WishlistDetail.tsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -49,32 +53,60 @@ const router = createBrowserRouter(
       <Route path="/category">
         <Route path=":slug" element={<CategoryPage />} />
       </Route>
-      <Route path="/cart" element={
-        <AccessGuard>
-          <CartPage />
-        </AccessGuard>
-        } 
+      <Route
+        path="/cart"
+        element={
+          <AccessGuard>
+            <CartPage />
+          </AccessGuard>
+        }
       />
 
-      <Route path="/me" element={<PrivateRoute><BuyerPage /></PrivateRoute>}>
-        <Route index element={<Navigate to="/me/my-account/profile" replace />} />
-        
-        <Route path="notification">
+      {/* Ai read here start */}
+      <Route
+        path="/me"
+        element={
+          <PrivateRoute>
+            <BuyerPage />
+          </PrivateRoute>
+        }
+      >
+        <Route
+          index
+          element={<Navigate to="/me/my-account/profile" replace />}
+        />
+
+        <Route path="notification" element={<Notification />}>
+          <Route
+            index
+            element={<Navigate to="/me/notification/n-orders" replace />}
+          />
           <Route path="n-orders" element={<NotificationOrders />} />
           <Route path="promotions" element={<NotificationPromotions />} />
         </Route>
-        
+
         <Route path="my-account">
           <Route path="profile" element={<BuyerProfile />} />
           <Route path="address" element={<BuyerAddress />} />
           <Route path="change-password" element={<BuyerChangePassword />} />
-          <Route path="notification-settings" element={<BuyerNotificationSettings />} />
+          <Route
+            path="notification-settings"
+            element={<BuyerNotificationSettings />}
+          />
           <Route path="privacy-settings" element={<BuyerPrivacySettings />} />
         </Route>
 
-        <Route path="orders" element={<Orders />} />
+        <Route path="orders">
+          <Route index element={<Orders />} />
+          <Route path=":id" element={<OrderDetail />} />
+        </Route>
         <Route path="vouchers" element={<Vouchers />} />
+      </Route>
+      {/* Ai read here end */}
 
+      <Route path="/wishlist" element={<PrivateRoute><WishListPage /></PrivateRoute>}>
+        <Route index element={<Wishlist />}/>
+        <Route path=":id" element={<WishlistDetail />} />
       </Route>
 
       <Route path="/success" element={<PaymentSuccess />} />
