@@ -19,6 +19,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 
+
 const SellerSideBar = () => {
   const [orderIsOpen, setOrderIsOpen] = useState(false);
   const [productIsOpen, setProductIsOpen] = useState(false);
@@ -28,7 +29,7 @@ const SellerSideBar = () => {
   const [metricsIsOpen, setMetricsIsOpen] = useState(false);
   const [settingsIsOpen, setSettingsIsOpen] = useState(false);
   const navigate = useNavigate();
-
+  
   return (
     <aside className="bg-black w-85 h-[calc(100vh-4.5rem)] overflow-y-auto custom-scrollbar">
       <nav className="pt-7">
