@@ -127,4 +127,9 @@ export interface AllProducts {
     views: string;
     bought: number;
     fts: string;
+    category_name: string;
+    variant_name: string;
+    variant_price: number;
+    variant_stock: number;
+    variant_sku: string;
 }
